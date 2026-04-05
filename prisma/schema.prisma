@@ -1,0 +1,1272 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Consultancy {
+  id              String            @id @default(cuid())
+  name            String
+  email           String            @unique
+  phone           String?
+  address         String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  status          ConsultancyStatus @default(PENDING)
+  selectedYear    Int               @default(dbgenerated("EXTRACT(year FROM CURRENT_DATE)"))
+  employees       Employee[]
+  japaneseClasses JapaneseClass[]
+  schools         School[]
+  students        Student[]
+  teachers        Teacher[]
+  users           User[]
+  fees            Fee[]
+  payments        Payment[]
+  financialSettings FinancialSettings?
+  messages         Message[]
+  inventory        Inventory[]
+  inventoryTransactions InventoryTransaction[]
+  todoCategories   TodoCategory[]
+  todoTemplates    TodoTemplate[]
+  studentTodos     StudentTodo[]
+  officeExpenses   OfficeExpense[]
+  officeExpenseTemplates OfficeExpenseTemplate[]
+  reminderTemplates ReminderTemplate[]
+  workflows        Workflow[]
+  workflowExecutions WorkflowExecution[]
+  notifications    Notification[]
+
+  @@map("consultancies")
+}
+
+model User {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  name          String?
+  password      String?
+  role          UserRole    @default(COUNSELOR)
+  consultancyId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  selectedYear  Int         @default(dbgenerated("EXTRACT(year FROM CURRENT_DATE)"))
+  accounts      Account[]
+  employee      Employee?
+  sessions      Session[]
+  student       Student?
+  teacher       Teacher?
+  consultancy   Consultancy @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  sentMessages   Message[] @relation("SentMessages")
+  createdWorkflows Workflow[]
+  workflowExecutions WorkflowExecution[]
+  receivedNotifications Notification[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Student {
+  id                    String            @id @default(cuid())
+  consultancyId         String
+  name                  String
+  passportNumber        String?           @unique
+  dateOfBirth           DateTime?
+  phone                 String
+  address               String
+  education             String?
+  japaneseLanguageLevel String?
+  intake                String?
+  visaStatus            VisaStatus        @default(NEW_LEAD)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  financialProof        String?
+  preferredStudyField   String?
+  studyGoals            String?
+  workExperience        String?
+  category              StudentCategory   @default(VISITOR)
+  categoryUpdatedAt     DateTime?
+  email                 String?           @unique
+  hasLoginAccess        Boolean           @default(false)
+  loginSentAt           DateTime?
+  userId                String?           @unique
+  applications          Application[]
+  enrollments           ClassEnrollment[]
+  documents             Document[]
+  interviews            Interview[]
+  sponsors              Sponsor[]
+  fees                  Fee[]
+  studentTodos          StudentTodo[]
+  workflowExecutions    WorkflowExecution[]
+  consultancy           Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  user                  User?             @relation(fields: [userId], references: [id])
+
+  @@map("students")
+}
+
+model School {
+  id            String        @id @default(cuid())
+  consultancyId String
+  name          String
+  address       String?
+  website       String?
+  isPartner     Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  applications  Application[]
+  consultancy   Consultancy   @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+
+  @@map("schools")
+}
+
+model Document {
+  id              String         @id @default(cuid())
+  studentId       String
+  type            String
+  fileName        String?
+  filePath        String?
+  status          DocumentStatus @default(MISSING)
+  notes           String?
+  uploadedAt      DateTime?
+  uploadedBy      String?
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  rejectedAt      DateTime?
+  rejectedBy      String?
+  publicId        String?
+  rejectionReason String?
+  student         Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model Sponsor {
+  id          String   @id @default(cuid())
+  studentId   String
+  name        String
+  relation    String
+  income      String?
+  bankBalance String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("sponsors")
+}
+
+model Application {
+  id             String             @id @default(cuid())
+  studentId      String
+  schoolId       String
+  appliedAt      DateTime           @default(now())
+  status         ApplicationStatus  @default(PENDING)
+  notes          String?
+  submittedBy    String?            // User who submitted the application
+  submittedAt    DateTime?          // When application was marked as sent to school
+  responseDate   DateTime?          // School's response date
+  responseNotes  String?            // School's response/rejection notes
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  school         School             @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student        Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, schoolId])
+  @@map("applications")
+}
+
+model Teacher {
+  id                 String            @id @default(cuid())
+  userId             String            @unique
+  consultancyId      String
+  specialization     String?
+  experience         String?
+  qualifications     String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  address            String?
+  bankAccount        String?
+  certifications     String?
+  contractEndDate    DateTime?
+  currency           String?           @default("USD")
+  dateOfBirth        DateTime?
+  emergencyContact   String?
+  employeeId         String?           @unique
+  employmentType     EmploymentType    @default(FULL_TIME)
+  firstName          String
+  gender             String?
+  healthInsurance    Boolean           @default(false)
+  hireDate           DateTime?
+  housingAllowance   Float?
+  languages          String?
+  lastName           String
+  lastReviewDate     DateTime?
+  linkedinProfile    String?
+  mealAllowance      Float?
+  nationality        String?
+  otherBenefits      String?
+  performanceRating  String?
+  personalEmail      String?
+  phoneNumber        String?
+  probationEndDate   DateTime?
+  salary             Float?
+  skills             String?
+  status             TeacherStatus     @default(APPLICANT)
+  taxId              String?
+  teachingExperience String?
+  trainingCompleted  String?
+  transportAllowance Float?
+  workEmail          String?
+  interviews         Interview[]
+  classes            JapaneseClass[]
+  payslips           Payslip[]
+  documents          TeacherDocument[]
+  consultancy        Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  user               User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("teachers")
+}
+
+model Employee {
+  id                 String             @id @default(cuid())
+  userId             String             @unique
+  consultancyId      String
+  firstName          String
+  lastName           String
+  dateOfBirth        DateTime?
+  gender             String?
+  nationality        String?
+  phoneNumber        String?
+  address            String?
+  emergencyContact   String?
+  designation        String
+  department         String?
+  category           EmployeeCategory
+  experience         String?
+  qualifications     String?
+  skills             String?
+  previousCompanies  String?
+  employeeId         String?            @unique
+  status             EmployeeStatus     @default(APPLICANT)
+  employmentType     EmploymentType     @default(FULL_TIME)
+  hireDate           DateTime?
+  probationEndDate   DateTime?
+  contractEndDate    DateTime?
+  salary             Float?
+  currency           String?            @default("USD")
+  bankAccount        String?
+  taxId              String?
+  healthInsurance    Boolean            @default(false)
+  housingAllowance   Float?
+  transportAllowance Float?
+  mealAllowance      Float?
+  otherBenefits      String?
+  performanceRating  String?
+  lastReviewDate     DateTime?
+  trainingCompleted  String?
+  certifications     String?
+  workEmail          String?
+  personalEmail      String?
+  linkedinProfile    String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  documents          EmployeeDocument[]
+  payslips           EmployeePayslip[]
+  consultancy        Consultancy        @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("employees")
+}
+
+model JapaneseClass {
+  id            String            @id @default(cuid())
+  consultancyId String
+  teacherId     String
+  level         ClassLevel
+  name          String
+  description   String?
+  maxStudents   Int               @default(20)
+  isActive      Boolean           @default(true)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  enrollments   ClassEnrollment[]
+  schedules     ClassSchedule[]
+  consultancy   Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  teacher       Teacher           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("japanese_classes")
+}
+
+model ClassSchedule {
+  id          String            @id @default(cuid())
+  classId     String
+  dayOfWeek   Int
+  startTime   DateTime
+  endTime     DateTime
+  room        String?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  enrollments ClassEnrollment[]
+  class       JapaneseClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@map("class_schedules")
+}
+
+model ClassEnrollment {
+  id         String            @id @default(cuid())
+  classId    String
+  scheduleId String
+  studentId  String
+  enrolledAt DateTime          @default(now())
+  isActive   Boolean           @default(true)
+  droppedAt  DateTime?
+  class      JapaneseClass     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  schedule   ClassSchedule     @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  student    Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  progress   StudentProgress[]
+
+  @@unique([classId, scheduleId, studentId])
+  @@map("class_enrollments")
+}
+
+model StudentProgress {
+  id             String          @id @default(cuid())
+  enrollmentId   String
+  assessmentDate DateTime        @default(now())
+  speakingScore  Int?
+  listeningScore Int?
+  readingScore   Int?
+  writingScore   Int?
+  overallScore   Int?
+  notes          String?
+  attendanceRate Float?
+  enrollment     ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@map("student_progress")
+}
+
+model Interview {
+  id          String          @id @default(cuid())
+  studentId   String
+  teacherId   String
+  type        InterviewType
+  status      InterviewStatus @default(SCHEDULED)
+  scheduledAt DateTime
+  duration    Int?
+  location    String?
+  notes       String?
+  feedback    String?
+  score       Int?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  student     Student         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher     Teacher         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("interviews")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model TeacherDocument {
+  id         String              @id @default(cuid())
+  teacherId  String
+  type       TeacherDocumentType
+  title      String
+  fileName   String
+  filePath   String
+  fileSize   Int
+  mimeType   String
+  status     DocumentStatus      @default(UPLOADED)
+  uploadedAt DateTime            @default(now())
+  uploadedBy String
+  verifiedAt DateTime?
+  verifiedBy String?
+  notes      String?
+  expiryDate DateTime?
+  teacher    Teacher             @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("teacher_documents")
+}
+
+model EmployeeDocument {
+  id         String               @id @default(cuid())
+  employeeId String
+  type       EmployeeDocumentType
+  title      String
+  fileName   String
+  filePath   String
+  fileSize   Int
+  mimeType   String
+  status     DocumentStatus       @default(UPLOADED)
+  uploadedAt DateTime             @default(now())
+  uploadedBy String
+  verifiedAt DateTime?
+  verifiedBy String?
+  notes      String?
+  expiryDate DateTime?
+  employee   Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_documents")
+}
+
+model Payslip {
+  id             String    @id @default(cuid())
+  teacherId      String
+  payPeriod      String
+  basicSalary    Float
+  housingAllow   Float     @default(0)
+  transportAllow Float     @default(0)
+  mealAllow      Float     @default(0)
+  otherAllow     Float     @default(0)
+  grossSalary    Float
+  taxDeduction   Float     @default(0)
+  insuranceDed   Float     @default(0)
+  otherDed       Float     @default(0)
+  netSalary      Float
+  currency       String    @default("USD")
+  payDate        DateTime?
+  status         String    @default("DRAFT")
+  createdAt      DateTime  @default(now())
+  approvedBy     String?
+  approvedAt     DateTime?
+  teacher        Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("payslips")
+}
+
+model EmployeePayslip {
+  id             String    @id @default(cuid())
+  employeeId     String
+  payPeriod      String
+  basicSalary    Float
+  housingAllow   Float     @default(0)
+  transportAllow Float     @default(0)
+  mealAllow      Float     @default(0)
+  otherAllow     Float     @default(0)
+  grossSalary    Float
+  taxDeduction   Float     @default(0)
+  insuranceDed   Float     @default(0)
+  otherDed       Float     @default(0)
+  netSalary      Float
+  currency       String    @default("USD")
+  payDate        DateTime?
+  status         String    @default("DRAFT")
+  createdAt      DateTime  @default(now())
+  approvedBy     String?
+  approvedAt     DateTime?
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@map("employee_payslips")
+}
+
+enum UserRole {
+  ADMIN
+  COUNSELOR
+  STUDENT
+  SUPERADMIN
+  TEACHER
+  EMPLOYEE
+}
+
+enum StudentCategory {
+  VISITOR
+  PROSPECT
+  APPLIED
+  COMMITTED
+  ENROLLED
+  ALUMNI
+}
+
+enum VisaStatus {
+  NEW_LEAD
+  DOCS_PENDING
+  DOCS_VERIFIED
+  SENT_TO_JAPAN
+  COE_APPLIED
+  COE_APPROVED
+  VISA_APPLIED
+  VISA_APPROVED
+  REJECTED
+}
+
+enum EmployeeStatus {
+  APPLICANT
+  SCREENING
+  INTERVIEW
+  OFFERED
+  HIRED
+  PROBATION
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum TeacherStatus {
+  APPLICANT
+  SCREENING
+  INTERVIEW
+  OFFERED
+  HIRED
+  PROBATION
+  ACTIVE
+  ON_LEAVE
+  TERMINATED
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+}
+
+enum EmployeeCategory {
+  ADMINISTRATION
+  MARKETING
+  LANGUAGE
+  COUNSELORS
+  IT
+  FINANCE
+  HR
+  OPERATIONS
+  MANAGEMENT
+  OTHER
+}
+
+enum EmployeeDocumentType {
+  CV
+  COVER_LETTER
+  CERTIFICATE
+  DEGREE
+  TRANSCRIPT
+  PASSPORT
+  VISA
+  CONTRACT
+  POLICE_CLEARANCE
+  HEALTH_CERT
+  PHOTO_ID
+  OTHER
+}
+
+enum TeacherDocumentType {
+  CV
+  COVER_LETTER
+  CERTIFICATE
+  DEGREE
+  TRANSCRIPT
+  PASSPORT
+  VISA
+  CONTRACT
+  POLICE_CLEARANCE
+  HEALTH_CERT
+  PHOTO_ID
+  OTHER
+}
+
+enum DocumentStatus {
+  MISSING
+  UPLOADED
+  VERIFIED
+  REJECTED
+}
+
+enum ConsultancyStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+enum ClassLevel {
+  N5
+  N4
+  N3
+  N2
+  N1
+}
+
+enum InterviewType {
+  MOCK
+  REAL
+  EMBASSY
+}
+
+enum ApplicationStatus {
+  PENDING
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+// Financial enums
+enum FeeType {
+  TUITION
+  CONSULTANCY
+  APPLICATION
+  VISA
+  ACCOMMODATION
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  ONLINE_PAYMENT
+  CHEQUE
+  OTHER
+}
+
+// Financial Models
+model Fee {
+  id            String     @id @default(cuid())
+  studentId     String
+  type          FeeType
+  title         String
+  description   String?
+  amount        Float
+  dueDate       DateTime
+  paidAmount    Float      @default(0)
+  status        PaymentStatus @default(PENDING)
+  consultancyId String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  
+  student       Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  consultancy   Consultancy @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  payments      Payment[]
+  
+  @@map("fees")
+}
+
+model Payment {
+  id            String         @id @default(cuid())
+  feeId         String
+  amount        Float
+  paymentDate   DateTime       @default(now())
+  method        PaymentMethod
+  status        PaymentStatus  @default(PAID)
+  transactionId String?
+  notes         String?
+  receiptUrls   String[]        // Array of receipt file URLs
+  transferDetails Json?        // Transfer details for bank transfers
+  receivedBy    String?        // User ID who received the payment
+  consultancyId String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  fee           Fee            @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  consultancy   Consultancy    @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("payments")
+}
+
+model FinancialSettings {
+  id                    String   @id @default(cuid())
+  consultancyId         String   @unique
+  consultancyFeePercent Float    @default(10.0) // Percentage of tuition fee
+  tuitionFeeRange       String   // e.g., "500000-1500000" in JPY
+  paymentDueDays        Int      @default(30) // Days before due date to send reminder
+  lateFeePercent        Float    @default(5.0) // Late fee percentage
+  currency              String   @default("JPY")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  consultancy           Consultancy @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("financial_settings")
+}
+
+// Messaging Models
+model Message {
+  id            String       @id @default(cuid())
+  senderId      String
+  recipientIds  String[]     // Array of user IDs who are recipients
+  subject       String
+  content       String
+  attachments   String[]     // Array of attachment URLs from Cloudinary
+  isRead        Boolean      @default(false)
+  isDeleted     Boolean      @default(false)
+  sentAt        DateTime     @default(now())
+  consultancyId String
+  
+  sender        User         @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  consultancy   Consultancy  @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("messages")
+}
+
+// Inventory Management Models
+model Inventory {
+  id              String            @id @default(cuid())
+  consultancyId   String
+  name            String
+  description     String?
+  category        InventoryCategory
+  subcategory     String?
+  sku             String?           @unique
+  quantity        Int               @default(0)
+  unit            String            @default("pcs")
+  location        String?
+  purchaseDate    DateTime?
+  purchaseCost    Float?
+  currentValue    Float?
+  condition       InventoryCondition @default(NEW)
+  status          InventoryStatus   @default(AVAILABLE)
+  supplier        String?
+  warrantyExpiry  DateTime?
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  notes           String?
+  imageUrl        String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  transactions    InventoryTransaction[]
+  consultancy     Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("inventory")
+}
+
+model InventoryTransaction {
+  id              String                  @id @default(cuid())
+  inventoryId     String
+  consultancyId   String
+  type            InventoryTransactionType
+  quantity        Int
+  unitCost        Float?
+  totalCost       Float?
+  reference       String?                 // Invoice number, receipt ID, etc.
+  purpose         String?                 // Reason for transaction
+  performedBy     String                  // User ID
+  performedAt     DateTime                @default(now())
+  notes           String?
+  
+  inventory       Inventory               @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  consultancy     Consultancy             @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("inventory_transactions")
+}
+
+enum InventoryCategory {
+  FURNITURE
+  ELECTRONICS
+  STATIONERY
+  EQUIPMENT
+  SUPPLIES
+  MAINTENANCE
+  UTILITY
+  RENT
+  MARKETING
+  TRAINING
+  TRANSPORT
+  SOFTWARE
+  LICENSES
+  INSURANCE
+  OTHER
+}
+
+enum InventoryCondition {
+  NEW
+  GOOD
+  FAIR
+  POOR
+  DAMAGED
+  BROKEN
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  RETIRED
+  LOST
+  DISPOSED
+}
+
+enum InventoryTransactionType {
+  PURCHASE
+  SALE
+  TRANSFER
+  ADJUSTMENT
+  MAINTENANCE
+  DISPOSAL
+  RETURN
+  LOAN
+  USAGE
+}
+
+// Office Expense Models
+model OfficeExpense {
+  id              String            @id @default(cuid())
+  consultancyId   String
+  title           String
+  description     String?
+  category        OfficeExpenseCategory
+  amount          Float
+  expenseMode     ExpenseMode       @default(CASH)
+  expenseDate     DateTime          @default(now())
+  receiptUrl      String?           // Receipt image URL
+  reference       String?           // Bill number, receipt ID, etc.
+  notes           String?           // Additional notes
+  tags            String[]          // Tags for better organization
+  isRecurring     Boolean           @default(false)
+  recurringType   RecurringType?     // DAILY, WEEKLY, MONTHLY, YEARLY
+  recurringEnd    DateTime?         // When recurring ends
+  approvedBy      String?           // User ID who approved
+  approvedAt      DateTime?         // When approved
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  consultancy     Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("office_expenses")
+}
+
+model OfficeExpenseTemplate {
+  id              String            @id @default(cuid())
+  consultancyId   String
+  title           String
+  description     String?
+  category        OfficeExpenseCategory
+  suggestedAmount Float?
+  expenseMode     ExpenseMode       @default(CASH)
+  isCommon        Boolean           @default(true)
+  isActive        Boolean           @default(true)
+  tags            String[]          // Suggested tags
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  consultancy     Consultancy       @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("office_expense_templates")
+}
+
+enum OfficeExpenseCategory {
+  RENT              // Office rent, lease payments
+  UTILITIES         // Electricity, water, internet, phone
+  SALARIES          // Staff salaries, wages
+  MARKETING         // Advertising, promotions, events
+  EQUIPMENT         // Office equipment, computers, furniture
+  SUPPLIES          // Stationery, office supplies
+  MAINTENANCE       // Office maintenance, repairs
+  INSURANCE         // Business insurance, liability
+  LEGAL            // Legal fees, consultations
+  TRAINING         // Staff training, development
+  TRAVEL           // Business travel, accommodation
+  ENTERTAINMENT    // Client entertainment, meals
+  SUBSCRIPTIONS    // Software subscriptions, memberships
+  BANKING          // Bank fees, charges
+  TAX              // Taxes, government fees
+  MISCELLANEOUS    // Other miscellaneous expenses
+}
+
+enum ExpenseMode {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+  CHEQUE
+  ONLINE_PAYMENT
+  OTHER
+}
+
+enum RecurringType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// Student Journey To-Do List Models
+model TodoCategory {
+  id            String    @id @default(cuid())
+  consultancyId String
+  name          String
+  description   String?
+  color         String    @default("#3B82F6")
+  icon          String?
+  order         Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  templates     TodoTemplate[]
+  todos         StudentTodo[]
+  consultancy   Consultancy @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("todo_categories")
+}
+
+model TodoTemplate {
+  id              String              @id @default(cuid())
+  consultancyId   String
+  categoryId      String
+  title           String
+  description     String?
+  priority        TodoPriority        @default(MEDIUM)
+  estimatedDays  Int?
+  isRequired      Boolean             @default(true)
+  dependencies    String[]            // Array of template IDs this depends on
+  checklistItems  String[]            // Sub-tasks for this todo
+  helpfulLinks    String[]            // URLs to helpful resources
+  targetStage     StudentJourneyStage
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  category        TodoCategory        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  todos           StudentTodo[]
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("todo_templates")
+}
+
+model StudentTodo {
+  id              String              @id @default(cuid())
+  studentId       String
+  consultancyId   String
+  templateId      String?
+  categoryId      String
+  title           String
+  description     String?
+  priority        TodoPriority        @default(MEDIUM)
+  status          TodoStatus          @default(PENDING)
+  dueDate         DateTime?
+  assignedDate    DateTime            @default(now())
+  completedDate   DateTime?
+  assignedBy      String?             // User ID who assigned this
+  completedBy     String?             // User ID who completed this
+  notes           String?             // Student notes
+  counselorNotes  String?             // Counselor notes
+  checklistItems  TodoChecklistItem[]
+  attachments     String[]            // File URLs
+  helpfulLinks    String[]            // URLs to helpful resources
+  estimatedDays   Int?
+  actualDays      Int?                // Days taken to complete
+  isOverdue       Boolean             @default(false)
+  reminderSent    Boolean             @default(false)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  student         Student             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  template        TodoTemplate?       @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  category        TodoCategory        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("student_todos")
+}
+
+model TodoChecklistItem {
+  id          String      @id @default(cuid())
+  todoId      String
+  title       String
+  isCompleted Boolean     @default(false)
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  todo        StudentTodo @relation(fields: [todoId], references: [id], onDelete: Cascade)
+  
+  @@map("todo_checklist_items")
+}
+
+enum TodoPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TodoStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  OVERDUE
+  BLOCKED
+}
+
+enum StudentJourneyStage {
+  INITIAL_ENQUIRY
+  DOCUMENTATION
+  APPLICATION_SUBMITTED
+  APPLICATION_PROCESSING
+  OFFER_RECEIVED
+  ACCEPTANCE_CONFIRMED
+  VISA_APPLICATION
+  VISA_PROCESSING
+  VISA_APPROVED
+  PRE_DEPARTURE
+  FLIGHT_BOOKING
+  ACCOMMODATION_SETUP
+  PACKING_PREPARATION
+  DEPARTURE
+  POST_ARRIVAL
+}
+
+enum MessageStatus {
+  SENT
+  READ
+  DELETED
+}
+
+// Automated Workflow & Reminder System Models
+model ReminderTemplate {
+  id              String              @id @default(cuid())
+  consultancyId   String
+  name            String
+  description     String?
+  triggerEvent    TriggerEvent
+  triggerCondition String?            // JSON conditions for when to trigger
+  timingType      TimingType          @default(IMMEDIATE)
+  timingValue     Int?                // Days/hours before/after event
+  messageTemplate String              // Email/SMS template with variables
+  inAppMessage   String?             // In-app notification message
+  recipientType   RecipientType       @default(STUDENT)
+  isActive        Boolean             @default(true)
+  priority        NotificationPriority @default(MEDIUM)
+  channels        NotificationChannel[] @default([IN_APP])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  executions      WorkflowExecution[]
+  
+  @@map("reminder_templates")
+}
+
+model Workflow {
+  id              String              @id @default(cuid())
+  consultancyId   String
+  name            String
+  description     String?
+  triggerEvent    TriggerEvent
+  triggerCondition String?            // JSON conditions
+  isActive        Boolean             @default(true)
+  priority        WorkflowPriority    @default(MEDIUM)
+  createdBy       String              // User ID
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  creator         User                @relation(fields: [createdBy], references: [id])
+  executions      WorkflowExecution[]
+  
+  @@map("workflows")
+}
+
+model WorkflowExecution {
+  id              String              @id @default(cuid())
+  workflowId      String?
+  studentId       String?
+  userId          String?
+  consultancyId   String
+  templateId      String?             // Reminder template ID if triggered by template
+  triggerData     Json?               // Event data that triggered this
+  status          ExecutionStatus      @default(PENDING)
+  scheduledAt     DateTime            // When scheduled to execute
+  executedAt      DateTime?
+  completedAt     DateTime?
+  result          Json?               // Execution result
+  errorMessage    String?
+  retryCount      Int                 @default(0)
+  maxRetries      Int                 @default(3)
+  nextRetryAt     DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  workflow        Workflow?            @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  student         Student?            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  user            User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template        ReminderTemplate?   @relation(fields: [templateId], references: [id])
+  notifications    Notification[]
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("workflow_executions")
+}
+
+model Notification {
+  id              String              @id @default(cuid())
+  executionId     String?             // Workflow execution ID
+  recipientId     String              // User ID who receives this
+  consultancyId   String
+  type            NotificationType
+  title           String
+  message         String
+  data            Json?               // Additional data
+  channels        NotificationChannel[] @default([IN_APP])
+  status          NotificationStatus   @default(PENDING)
+  scheduledAt     DateTime            @default(now())
+  sentAt          DateTime?
+  readAt          DateTime?
+  isRead          Boolean             @default(false)
+  priority        NotificationPriority @default(MEDIUM)
+  expiresAt       DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  execution       WorkflowExecution?  @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  recipient       User                @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  consultancy     Consultancy         @relation(fields: [consultancyId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
+}
+
+// Workflow & Reminder Enums
+enum TriggerEvent {
+  STUDENT_CREATED
+  STUDENT_STATUS_CHANGED
+  DOCUMENT_UPLOADED
+  DOCUMENT_VERIFIED
+  DOCUMENT_REJECTED
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  PAYMENT_RECEIVED
+  INTERVIEW_SCHEDULED
+  INTERVIEW_COMPLETED
+  VISA_STATUS_CHANGED
+  APPLICATION_SUBMITTED
+  APPLICATION_ACCEPTED
+  APPLICATION_REJECTED
+  CLASS_ENROLLED
+  CLASS_COMPLETED
+  TODO_ASSIGNED
+  TODO_COMPLETED
+  TODO_OVERDUE
+  CUSTOM_EVENT
+}
+
+enum TimingType {
+  IMMEDIATE
+  DAYS_BEFORE
+  DAYS_AFTER
+  HOURS_BEFORE
+  HOURS_AFTER
+  WEEKS_BEFORE
+  WEEKS_AFTER
+}
+
+enum RecipientType {
+  STUDENT
+  COUNSELOR
+  ADMIN
+  TEACHER
+  PARENT
+  ALL_STUDENTS
+  ALL_COUNSELORS
+  ALL_ADMINS
+  CUSTOM_ROLE
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  WHATSAPP
+  PUSH_NOTIFICATION
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum WorkflowPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ExecutionStatus {
+  PENDING
+  SCHEDULED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  RETRYING
+}
+
+enum NotificationType {
+  REMINDER
+  ALERT
+  WARNING
+  SUCCESS
+  INFO
+  SYSTEM
+  DOCUMENT_REQUEST
+  PAYMENT_REMINDER
+  INTERVIEW_REMINDER
+  STATUS_UPDATE
+  DEADLINE_APPROACHING
+  OVERDUE_NOTICE
+  COMPLIANCE_REQUIRED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}

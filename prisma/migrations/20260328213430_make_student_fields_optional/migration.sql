@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "students" ALTER COLUMN "passportNumber" DROP NOT NULL,
+ALTER COLUMN "dateOfBirth" DROP NOT NULL,
+ALTER COLUMN "education" DROP NOT NULL,
+ALTER COLUMN "japaneseLanguageLevel" DROP NOT NULL,
+ALTER COLUMN "intake" DROP NOT NULL;

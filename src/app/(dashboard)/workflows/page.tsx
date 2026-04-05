@@ -225,7 +225,13 @@ export default function WorkflowManagement() {
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesEvent = !selectedEvent || selectedEvent === 'all' || template.triggerEvent === selectedEvent
+    
+    let matchesEvent = true
+    if (selectedEvent) {
+      // selectedEvent is a TriggerEvent here, not empty string
+      matchesEvent = template.triggerEvent === selectedEvent
+    }
+    
     return matchesSearch && matchesEvent
   })
 

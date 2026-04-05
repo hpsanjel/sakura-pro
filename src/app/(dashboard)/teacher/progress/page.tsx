@@ -19,6 +19,7 @@ interface Student {
 
 interface ClassEnrollment {
   id: string
+  enrolledAt: string
   student: Student
   class: {
     id: string

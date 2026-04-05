@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/generated/prisma'
+import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getWorkflowEngine } from '@/lib/workflow-engine'
-
-const prisma = new PrismaClient()
 
 // GET /api/workflows/executions - Get workflow executions
 export async function GET(request: NextRequest) {

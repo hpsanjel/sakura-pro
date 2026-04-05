@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation"
 import { 
   Plus, Search, Filter, Calendar, Download, 
   Receipt, DollarSign, CreditCard, Building, Plane, Utensils, Smartphone, PiggyBank,
-  Lock, RefreshCw, AlertCircle, MoreVertical, Home, Zap, Users, Megaphone, Briefcase, Wrench, Shield, GraduationCap
+  Lock, RefreshCw, AlertCircle, MoreVertical, Home, Zap, Users, Megaphone, Briefcase, Wrench, Shield, GraduationCap,
+  File
 } from "lucide-react"
 
 interface OfficeExpense {
@@ -46,15 +47,15 @@ interface ExpenseTemplate {
 
 const EXPENSE_CATEGORIES = [
   { value: "ALL", label: "All Categories", icon: DollarSign, color: "bg-gray-100 text-gray-800" },
-  { value: "RENT", label: "Rent", icon: Building2, color: "bg-purple-100 text-purple-800" },
+  { value: "RENT", label: "Rent", icon: Building, color: "bg-purple-100 text-purple-800" },
   { value: "UTILITIES", label: "Utilities", icon: Zap, color: "bg-blue-100 text-blue-800" },
   { value: "SALARIES", label: "Salaries", icon: Users, color: "bg-green-100 text-green-800" },
   { value: "MARKETING", label: "Marketing", icon: Megaphone, color: "bg-pink-100 text-pink-800" },
   { value: "EQUIPMENT", label: "Equipment", icon: Briefcase, color: "bg-indigo-100 text-indigo-800" },
-  { value: "SUPPLIES", label: "Supplies", icon: FileText, color: "bg-yellow-100 text-yellow-800" },
+  { value: "SUPPLIES", label: "Supplies", icon: File, color: "bg-yellow-100 text-yellow-800" },
   { value: "MAINTENANCE", label: "Maintenance", icon: Wrench, color: "bg-orange-100 text-orange-800" },
   { value: "INSURANCE", label: "Insurance", icon: Shield, color: "bg-teal-100 text-teal-800" },
-  { value: "LEGAL", label: "Legal", icon: FileText, color: "bg-red-100 text-red-800" },
+  { value: "LEGAL", label: "Legal", icon: File, color: "bg-red-100 text-red-800" },
   { value: "TRAINING", label: "Training", icon: GraduationCap, color: "bg-cyan-100 text-cyan-800" },
   { value: "TRAVEL", label: "Travel", icon: Plane, color: "bg-emerald-100 text-emerald-800" },
   { value: "ENTERTAINMENT", label: "Entertainment", icon: Utensils, color: "bg-violet-100 text-violet-800" },

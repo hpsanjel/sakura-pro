@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       prisma.application.count({
         where: {
           school: { consultancyId },
-          status: "APPROVED",
+          status: "ACCEPTED",
           ...yearFilter
         }
       }),

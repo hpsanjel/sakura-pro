@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Database test error:", error)
     return NextResponse.json(
-      { error: "Database connection failed", details: error.message },
+      { error: "Database connection failed", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     )
   }

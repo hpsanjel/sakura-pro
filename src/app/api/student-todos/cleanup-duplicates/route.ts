@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     console.log(`📊 Found ${allCategories.length} total categories`)
 
     // Group categories by name
-    const categoriesByName = allCategories.reduce((groups, category) => {
+    const categoriesByName = allCategories.reduce((groups: Record<string, any[]>, category) => {
       if (!groups[category.name]) {
         groups[category.name] = []
       }
@@ -67,18 +67,18 @@ export async function POST(request: NextRequest) {
 
     // Process each category name group
     for (const [categoryName, categories] of Object.entries(categoriesByName)) {
-      console.log(`\n🔍 Processing category: "${categoryName}" (${categories.length} duplicates)`)
+      console.log(`\n🔍 Processing category: "${categoryName}" (${(categories as any[]).length} duplicates)`)
       
-      if (categories.length === 1) {
+      if ((categories as any[]).length === 1) {
         console.log(`✅ Only one instance of "${categoryName}" - keeping it`)
         continue
       }
 
       // Sort by creation date to keep the oldest one
-      categories.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      (categories as any[]).sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       
       // Keep the first (oldest) category, delete the rest
-      const [keepCategory, ...deleteCategories] = categories
+      const [keepCategory, ...deleteCategories] = categories as any[]
       
       console.log(`📌 Keeping: ${keepCategory.id} (created ${keepCategory.createdAt})`)
       console.log(`🗑️  Deleting: ${deleteCategories.map(c => `${c.id} (${c._count.todos} todos, ${c._count.templates} templates)`).join(', ')}`)

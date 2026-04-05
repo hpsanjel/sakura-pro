@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/generated/prisma'
+import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getWorkflowEngine } from '@/lib/workflow-engine'
 import { TriggerEvent } from '@/generated/prisma'
-
-const prisma = new PrismaClient()
 
 // POST /api/workflows/trigger - Trigger workflow event
 export async function POST(request: NextRequest) {
@@ -65,29 +63,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error triggering workflow:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-
-// POST /api/workflows/process - Process scheduled workflows
-export async function POST() {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.consultancyId || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const workflowEngine = getWorkflowEngine(prisma)
-    
-    // Process scheduled workflows
-    await workflowEngine.processScheduledWorkflows()
-
-    return NextResponse.json({ 
-      message: 'Scheduled workflows processed successfully',
-      timestamp: new Date().toISOString()
-    })
-  } catch (error) {
-    console.error('Error processing scheduled workflows:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/generated/prisma'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
 
 // Test endpoint to debug database issues
 export async function GET(request: NextRequest) {

@@ -109,7 +109,6 @@ export async function POST(request: NextRequest) {
           assignedDate: now,
           dueDate: dueDate,
           assignedBy: session.user.id,
-          checklistItems: template.checklistItems,
           helpfulLinks: template.helpfulLinks,
           estimatedDays: template.estimatedDays,
         },

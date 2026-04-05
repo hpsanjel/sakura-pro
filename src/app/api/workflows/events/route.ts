@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@/generated/prisma'
+import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getWorkflowEngine } from '@/lib/workflow-engine'
-
-const prisma = new PrismaClient()
 
 // Example middleware to trigger events based on system actions
 export async function POST(request: NextRequest) {

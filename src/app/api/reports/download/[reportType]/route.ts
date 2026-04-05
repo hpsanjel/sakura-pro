@@ -119,7 +119,7 @@ async function generateStudentsReport(consultancyId: string): Promise<string> {
     student.createdAt.toISOString().split('T')[0]
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 async function generateApplicationsReport(consultancyId: string): Promise<string> {
@@ -165,7 +165,7 @@ async function generateApplicationsReport(consultancyId: string): Promise<string
     app.appliedAt.toISOString().split('T')[0]
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 async function generateVisaStatusReport(consultancyId: string): Promise<string> {
@@ -201,7 +201,7 @@ async function generateVisaStatusReport(consultancyId: string): Promise<string> 
     student.updatedAt.toISOString().split('T')[0]
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 async function generateFinancialReport(consultancyId: string): Promise<string> {
@@ -234,7 +234,7 @@ async function generateFinancialReport(consultancyId: string): Promise<string> {
     student.createdAt.toISOString().split('T')[0]
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 async function generateEnrollmentsReport(consultancyId: string): Promise<string> {
@@ -299,7 +299,7 @@ async function generateEnrollmentsReport(consultancyId: string): Promise<string>
     enrollment.isActive ? "Active" : "Inactive"
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 async function generateDocumentsReport(consultancyId: string): Promise<string> {
@@ -333,11 +333,11 @@ async function generateDocumentsReport(consultancyId: string): Promise<string> {
     doc.fileName,
     doc.status,
     doc.notes || "",
-    doc.uploadedAt.toISOString().split('T')[0],
+    doc.uploadedAt?.toISOString().split('T')[0] || "",
     doc.verifiedAt?.toISOString().split('T')[0] || ""
   ])
 
-  return convertToCSV(headers, rows.map(row => row.map(field => (field as any) instanceof Date ? field.toISOString().split('T')[0] : (field || ""))))
+  return convertToCSV(headers, rows.map(row => row.map(field => (field as any instanceof Date) ? (field as any).toISOString().split('T')[0] : (field || ""))))
 }
 
 function convertToCSV(headers: string[], rows: string[][]): string {

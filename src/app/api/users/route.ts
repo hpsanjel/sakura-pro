@@ -123,6 +123,8 @@ export async function POST(req: NextRequest) {
           data: {
             userId: newUser.id,
             consultancyId: consultancyId,
+            firstName: name.split(' ')[0] || name,
+            lastName: name.split(' ').slice(1).join(' ') || '',
           },
         })
       } catch (teacherError) {

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
-import crypto from "crypto"
-
-// In a real implementation, you would have a proper token storage system
-// For demo purposes, we'll use a simple approach
-const setupTokens = new Map<string, { userId: string; email: string; expires: number }>()
+import { validateSetupToken, consumeSetupToken } from "@/lib/tokens"
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,81 +22,52 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For demo purposes, we'll find a student user that was created recently
-    // and has a temporary password (indicating they haven't set their password yet)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-    
-    // Find student users created in the last 24 hours who haven't set a real password yet
-    // We'll identify them by having a temporary password pattern (long hex string)
-    const users = await prisma.user.findMany({
-      where: {
-        role: 'STUDENT',
-        createdAt: {
-          gte: oneDayAgo
-        },
-        password: {
-          startsWith: '$2b$12$' // bcrypt hash pattern
-        },
-        student: {
-          hasLoginAccess: true,
-          loginSentAt: {
-            gte: oneDayAgo
-          }
-        }
-      },
-      include: {
-        student: true
-      },
-      orderBy: {
-        createdAt: 'desc'
-      },
-      take: 1 // Get the most recent one
-    })
-
-    if (users.length === 0) {
-      console.log("No student users found with temporary passwords")
+    // Validate the setup token
+    const tokenData = validateSetupToken(token)
+    if (!tokenData) {
       return NextResponse.json(
         { error: "Invalid or expired setup link" },
         { status: 400 }
       )
     }
 
-    const user = users[0]
-
-    if (!user.student) {
-      console.log("User found but no student relationship:", user.id)
-      return NextResponse.json(
-        { error: "Student account not found" },
-        { status: 404 }
-      )
-    }
-
-    console.log("Found student user:", user.email, "Student ID:", user.student.id)
+    console.log(`Setting up password for ${tokenData.role}: ${tokenData.email}`)
 
     // Hash the new password
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Update the user's password
-    await prisma.user.update({
-      where: { id: user.id },
+    const user = await prisma.user.update({
+      where: { id: tokenData.userId },
       data: {
         password: hashedPassword
       }
     })
 
-    // Update student to mark that they've set their password
-    await prisma.student.update({
-      where: { id: user.student.id },
-      data: {
-        loginSentAt: new Date() // Update to show password was set
-      }
-    })
+    // Role-specific updates
+    if (tokenData.role === 'STUDENT') {
+      // Update student to mark that they've set their password
+      await prisma.student.update({
+        where: { userId: tokenData.userId },
+        data: {
+          loginSentAt: new Date() // Update to show password was set
+        }
+      })
+    } else if (tokenData.role === 'ADMIN') {
+      // For consultancy admins, we might want to mark that they've completed setup
+      // This could be used for tracking purposes
+      console.log(`Admin ${tokenData.email} has completed password setup`)
+    }
 
-    console.log("Password updated successfully for:", user.email)
+    // Consume the token so it can't be used again
+    consumeSetupToken(token)
+
+    console.log(`Password updated successfully for: ${tokenData.email}`)
 
     return NextResponse.json({
       message: "Password set successfully",
-      email: user.email
+      email: tokenData.email,
+      role: tokenData.role
     })
 
   } catch (error) {

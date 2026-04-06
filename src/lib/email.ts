@@ -337,7 +337,7 @@ export async function sendPayslipEmail(
   const mailOptions = {
     from: `"${consultancyName} HR" <${process.env.GMAIL_USER}>`,
     to: teacherEmail,
-    subject: `� Your Payslip for ${payslipData.payPeriod} - ${consultancyName}`,
+    subject: `📄 Your Payslip for ${payslipData.payPeriod} - ${consultancyName}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -411,4 +411,128 @@ export async function sendPayslipEmail(
   }
 
   await transporter.sendMail(mailOptions)
+}
+
+export async function sendConsultancyWelcomeEmail(
+  consultancyEmail: string,
+  consultancyName: string,
+  adminEmail: string,
+  adminName: string,
+  setupToken: string
+) {
+  const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/setup-password?token=${setupToken}`
+  
+  const mailOptions = {
+    from: `"StudyAbroad Pro" <${process.env.GMAIL_USER}>`,
+    to: adminEmail,
+    subject: `🎉 Welcome to StudyAbroad Pro - ${consultancyName}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+            .welcome-box { background: white; border: 2px solid #667eea; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+            .credentials { background: white; border: 2px solid #667eea; border-radius: 8px; padding: 20px; margin: 20px 0; }
+            .credential-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+            .credential-row:last-child { border-bottom: none; }
+            .label { font-weight: 600; color: #6b7280; }
+            .value { color: #1f2937; }
+            .button { display: inline-block; background: #667eea; color: white !important; padding: 15px 30px; text-decoration: none !important; border-radius: 6px; margin: 20px 0; font-weight: 600; }
+            .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px; }
+            .steps { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; }
+            .step { display: flex; align-items: center; margin: 15px 0; }
+            .step-number { background: #667eea; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">Welcome to StudyAbroad Pro! 🎉</h1>
+              <p style="margin: 10px 0 0 0; font-size: 18px;">Your Consultancy Management Journey Begins</p>
+            </div>
+            <div class="content">
+              <h2>Dear ${adminName},</h2>
+              <p>Congratulations! <strong>${consultancyName}</strong> has been successfully registered on StudyAbroad Pro. Your consultancy is now ready to help students achieve their dream of studying in Japan.</p>
+              
+              <div class="welcome-box">
+                <h3 style="margin-top: 0; color: #667eea;">🚀 Your Admin Portal is Ready!</h3>
+                <p>You now have access to a comprehensive platform to:</p>
+                <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
+                  <li>👥 Manage students and applications</li>
+                  <li>📋 Track document submissions</li>
+                  <li>📊 Monitor visa progress</li>
+                  <li>💬 Communicate with students</li>
+                  <li>📈 Generate reports and analytics</li>
+                </ul>
+              </div>
+
+              <div class="credentials">
+                <h3 style="margin-top: 0; color: #667eea;">Your Account Information</h3>
+                <div class="credential-row">
+                  <span class="label">Consultancy:</span>
+                  <span class="value">${consultancyName}</span>
+                </div>
+                <div class="credential-row">
+                  <span class="label">Email:</span>
+                  <span class="value">${adminEmail}</span>
+                </div>
+                <div class="credential-row">
+                  <span class="label">Role:</span>
+                  <span class="value">Administrator</span>
+                </div>
+              </div>
+
+              <h3>🔐 Set Up Your Password</h3>
+              <p>To get started, you need to create a secure password for your admin account. Click the button below to set up your password:</p>
+
+              <a href="${setupLink}" class="button">
+                Set Up My Password →
+              </a>
+
+              <p><strong>⚠️ Important:</strong> This setup link will expire in 24 hours for security reasons. Please set up your password as soon as possible.</p>
+
+              <div class="steps">
+                <h3 style="margin-top: 0; color: #667eea;">What's Next?</h3>
+                <div class="step">
+                  <div class="step-number">1</div>
+                  <div>Set up your password using the button above</div>
+                </div>
+                <div class="step">
+                  <div class="step-number">2</div>
+                  <div>Log in to your admin dashboard</div>
+                </div>
+                <div class="step">
+                  <div class="step-number">3</div>
+                  <div>Add counselors and team members</div>
+                </div>
+                <div class="step">
+                  <div class="step-number">4</div>
+                  <div>Start managing student applications</div>
+                </div>
+              </div>
+
+              <p>If you have any questions or need assistance, our support team is here to help you every step of the way.</p>
+
+              <p>We're excited to partner with you in helping students achieve their Japanese education dreams! 🇯🇵</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 StudyAbroad Pro. All rights reserved.</p>
+              <p style="margin-top: 10px; font-size: 12px;">This is an automated message. Please do not reply to this email.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+  } catch (error) {
+    console.error('Failed to send consultancy welcome email:', error)
+    throw error
+  }
 }

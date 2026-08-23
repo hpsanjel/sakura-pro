@@ -13,7 +13,7 @@ const createStudentSchema = z.object({
   address: z.string().min(1, "Address is required"),
   email: z.string().email("Valid email is required"),
   education: z.string().optional(),
-  japaneseLanguageLevel: z.enum(["N1", "N2", "N3", "N4", "N5"]).optional(),
+  japaneseLanguageLevel: z.string().optional(),
   intake: z.enum(["April", "July", "October", "January"]).optional(),
   visaStatus: z.enum(["NEW_LEAD", "DOCS_PENDING", "DOCS_VERIFIED", "SENT_TO_JAPAN", "COE_APPLIED", "COE_APPROVED", "VISA_APPLIED", "VISA_APPROVED", "REJECTED"]).optional(),
   studyGoals: z.string().optional(),

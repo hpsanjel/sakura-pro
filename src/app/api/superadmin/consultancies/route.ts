@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Generate setup token for the admin
-    const setupToken = generateSetupToken(
+    const setupToken = await generateSetupToken(
       result.admin.id,
       result.admin.email,
       "ADMIN",

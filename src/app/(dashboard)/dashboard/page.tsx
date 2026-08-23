@@ -196,7 +196,7 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
-      ) : (
+      ) : user.role === "SUPERADMIN" ? null : (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 mb-8">
           <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -204,22 +204,22 @@ export default function DashboardPage() {
               <Plus className="w-4 h-4" />
               Add Student
             </Link>
-            
+
             <Link href="/student-todos" className="inline-flex items-center gap-2 bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
               <CheckCircle className="w-4 h-4" />
               Student To-Dos
             </Link>
-          
+
             <Link href="/students" className="inline-flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
               <Users className="w-4 h-4" />
               View All Students
             </Link>
-          
+
             <Link href="/documents" className="inline-flex items-center gap-2 bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
               <FileText className="w-4 h-4" />
               Documents
             </Link>
-          
+
             <Link href="/financial" className="inline-flex items-center gap-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
               <TrendingUp className="w-4 h-4" />
               Financial

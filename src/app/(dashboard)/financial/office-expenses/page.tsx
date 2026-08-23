@@ -188,8 +188,24 @@ export default function OfficeExpensesPage() {
       }
 
       const data = await response.json()
-      setTemplates(data.templates || [])
-      
+      let fetchedTemplates = data.templates || []
+
+      // No common templates exist yet for this consultancy - set up the
+      // default set automatically so the picker isn't empty on first use.
+      // Only ADMIN can initialize them; other roles just see the empty state.
+      if (fetchedTemplates.length === 0 && session?.user?.role === "ADMIN") {
+        const initResponse = await fetch("/api/office-expenses/initialize", { method: "POST" })
+        if (initResponse.ok) {
+          const retryResponse = await fetch("/api/office-expenses/templates?isCommon=true")
+          if (retryResponse.ok) {
+            const retryData = await retryResponse.json()
+            fetchedTemplates = retryData.templates || []
+          }
+        }
+      }
+
+      setTemplates(fetchedTemplates)
+
     } catch (error) {
       console.error("Error fetching templates:", error)
     }

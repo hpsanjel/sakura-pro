@@ -420,7 +420,7 @@ export async function sendConsultancyWelcomeEmail(
   adminName: string,
   setupToken: string
 ) {
-  const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/setup-password?token=${setupToken}`
+  const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/setup-password?token=${setupToken}`
   
   const mailOptions = {
     from: `"StudyAbroad Pro" <${process.env.GMAIL_USER}>`,

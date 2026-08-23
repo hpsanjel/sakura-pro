@@ -401,7 +401,7 @@ export default function FinancialPage() {
         {activeTab === "overview" && summary && (
           <div className="space-y-6">
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-blue-100 rounded-lg">
@@ -459,7 +459,7 @@ export default function FinancialPage() {
                     <Users className="w-6 h-6 text-purple-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Fees</p>
+                    <p className="text-sm font-medium text-gray-600">Number of Fees</p>
                     <p className="text-2xl font-bold text-gray-900">{summary.overview.totalFeesCount}</p>
                   </div>
                 </div>
@@ -847,8 +847,8 @@ export default function FinancialPage() {
                         const typeConfig = feeTypeConfig[fee.type as keyof typeof feeTypeConfig]
                         const statusConfig = paymentStatusConfig[fee.status as keyof typeof paymentStatusConfig]
                         const remainingAmount = fee.amount - fee.paidAmount
-                        const paymentProgress = (fee.paidAmount / fee.amount) * 100
-                        
+                        const paymentProgress = fee.amount > 0 ? (fee.paidAmount / fee.amount) * 100 : 0
+
                         return (
                           <tr key={fee.id}>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -862,8 +862,8 @@ export default function FinancialPage() {
                               <div className="flex flex-col">
                                 <span>{formatCurrency(fee.amount)}</span>
                                 <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                                  <div 
-                                    className="bg-green-600 h-1.5 rounded-full" 
+                                  <div
+                                    className="bg-green-600 h-1.5 rounded-full"
                                     style={{ width: `${Math.min(paymentProgress, 100)}%` }}
                                   ></div>
                                 </div>
@@ -876,7 +876,7 @@ export default function FinancialPage() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <span className={`font-medium ${
-                                remainingAmount === 0 ? "text-green-600" : 
+                                remainingAmount === 0 ? "text-green-600" :
                                 remainingAmount > 0 ? "text-orange-600" : "text-gray-900"
                               }`}>
                                 {formatCurrency(remainingAmount)}
@@ -948,8 +948,8 @@ export default function FinancialPage() {
                         const typeConfig = feeTypeConfig[fee.type as keyof typeof feeTypeConfig]
                         const daysOverdue = Math.ceil((new Date().getTime() - new Date(fee.dueDate).getTime()) / (1000 * 60 * 60 * 24))
                         const remainingAmount = fee.amount - fee.paidAmount
-                        const paymentProgress = (fee.paidAmount / fee.amount) * 100
-                        
+                        const paymentProgress = fee.amount > 0 ? (fee.paidAmount / fee.amount) * 100 : 0
+
                         return (
                           <tr key={fee.id} className="bg-red-50">
                             <td className="px-6 py-4 whitespace-nowrap">

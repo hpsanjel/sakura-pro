@@ -74,6 +74,9 @@ async function main() {
 
   console.log('✅ Created admin user:', admin.email)
 
+  // From here on, staff and student accounts are created by the consultancy
+  // admin rather than the superadmin, mirroring how the app's own
+  // "create user" flow works.
   const counselor = await prisma.user.upsert({
     where: { email: 'jaya@fate.edu.np' },
     update: {},
@@ -86,7 +89,37 @@ async function main() {
     },
   })
 
-  console.log('✅ Created counselor user:', counselor.email)
+  console.log(`✅ Admin (${admin.email}) created counselor user:`, counselor.email)
+
+  const teacherUser = await prisma.user.upsert({
+    where: { email: 'teacher@fate.edu.np' },
+    update: {},
+    create: {
+      email: 'teacher@fate.edu.np',
+      name: 'Sakura Tanaka',
+      password: await bcrypt.hash('hed0nist', 10),
+      role: 'TEACHER',
+      consultancyId: consultancy.id,
+    },
+  })
+
+  console.log(`✅ Admin (${admin.email}) created teacher user:`, teacherUser.email)
+
+  const teacher = await prisma.teacher.upsert({
+    where: { userId: teacherUser.id },
+    update: {},
+    create: {
+      userId: teacherUser.id,
+      consultancyId: consultancy.id,
+      firstName: 'Sakura',
+      lastName: 'Tanaka',
+      specialization: 'Japanese Language & Culture',
+      experience: '5 years of teaching Japanese to Nepali students',
+      qualifications: 'JLPT N1, Japanese Teaching Certificate',
+    },
+  })
+
+  console.log('✅ Created teacher profile for:', teacherUser.name)
 
   const student = await prisma.user.upsert({
     where: { email: 'hridaya@fate.edu.np' },
@@ -100,7 +133,7 @@ async function main() {
     },
   })
 
-  console.log('✅ Created student user:', student.email)
+  console.log(`✅ Admin (${admin.email}) created student user:`, student.email)
 
   // Create sample students (actual student profiles)
   const student1 = await prisma.student.upsert({
@@ -155,43 +188,12 @@ async function main() {
       name: 'Tokyo Language Academy',
       address: 'Shinjuku, Tokyo, Japan',
       website: 'https://tla.example.com',
+      isPartner: true,
       consultancyId: consultancy.id,
     },
   })
 
   console.log('✅ Created sample school:', school.name)
-
-  // Create sample teacher user
-  const teacherUser = await prisma.user.upsert({
-    where: { email: 'teacher@fate.edu.np' },
-    update: {},
-    create: {
-      email: 'teacher@fate.edu.np',
-      name: 'Sakura Tanaka',
-      password: await bcrypt.hash('hed0nist', 10),
-      role: 'TEACHER',
-      consultancyId: consultancy.id,
-    },
-  })
-
-  console.log('✅ Created teacher user:', teacherUser.name)
-
-  // Create teacher profile
-  const teacher = await prisma.teacher.upsert({
-    where: { userId: teacherUser.id },
-    update: {},
-    create: {
-      userId: teacherUser.id,
-      consultancyId: consultancy.id,
-      firstName: 'Sakura',
-      lastName: 'Tanaka',
-      specialization: 'Japanese Language & Culture',
-      experience: '5 years of teaching Japanese to Nepali students',
-      qualifications: 'JLPT N1, Japanese Teaching Certificate',
-    },
-  })
-
-  console.log('✅ Created teacher profile for:', teacherUser.name)
 
   // Create sample Japanese class
   const japaneseClass = await prisma.japaneseClass.upsert({

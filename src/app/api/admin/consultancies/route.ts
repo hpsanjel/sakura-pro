@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate setup token and email the admin a password-setup link
-    const setupToken = generateSetupToken(
+    const setupToken = await generateSetupToken(
       result.admin.id,
       result.admin.email,
       "ADMIN",

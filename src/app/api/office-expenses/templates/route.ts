@@ -18,15 +18,24 @@ const createTemplateSchema = z.object({
 // GET - Fetch expense templates
 export async function GET(request: NextRequest) {
   try {
-    // Templates are public, no authentication required for GET
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const consultancyId = session.user.consultancyId
+    if (!consultancyId) {
+      return NextResponse.json({ error: "Consultancy ID not found" }, { status: 400 })
+    }
+
     const { searchParams } = new URL(request.url)
     const category = searchParams.get("category")
     const isCommon = searchParams.get("isCommon")
     const search = searchParams.get("search")
 
-    // Build filter conditions - for public access, only show common templates
-    const where: any = { isActive: true }
-    
+    const where: any = { isActive: true, consultancyId }
+
     if (category && category !== "ALL") {
       where.category = category
     }

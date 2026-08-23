@@ -1,33 +1,18 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getApiSession, requireRole, tenantWhere } from "@/lib/api-auth"
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check if user has permission to view all documents
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { consultancy: true }
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
+    const session = await getApiSession()
 
     // Only ADMIN, COUNSELOR, and SUPERADMIN can view all documents
-    if (!["ADMIN", "COUNSELOR", "SUPERADMIN"].includes(user.role)) {
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
-    }
+    const denied = requireRole(session, ["ADMIN", "COUNSELOR", "SUPERADMIN"])
+    if (denied) return denied
 
-    // Get all students with their documents
+    // Get all students (scoped to the caller's consultancy) with their documents
     const students = await prisma.student.findMany({
+      where: tenantWhere(session!),
       include: {
         documents: {
           orderBy: {

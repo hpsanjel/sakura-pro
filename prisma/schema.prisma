@@ -415,6 +415,19 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+model SetupToken {
+  id             String   @id @default(cuid())
+  token          String   @unique
+  userId         String
+  email          String
+  role           String
+  consultancyId  String?
+  expires        DateTime
+  createdAt      DateTime @default(now())
+
+  @@map("setup_tokens")
+}
+
 model TeacherDocument {
   id         String              @id @default(cuid())
   teacherId  String

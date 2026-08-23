@@ -267,42 +267,6 @@ export default function NotificationCenter() {
                   Mark All as Read
                 </Button>
               )}
-              <Button
-                onClick={() => {
-                  console.log('Test button clicked')
-                  const unreadNotification = notifications.find(n => n.status === NotificationStatus.SENT)
-                  if (unreadNotification) {
-                    console.log('Found unread notification:', unreadNotification.id)
-                    markAsRead(unreadNotification.id)
-                  } else {
-                    console.log('No unread notifications found')
-                  }
-                }}
-                className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-              >
-                Test Mark Read
-              </Button>
-              <Button
-                onClick={async () => {
-                  console.log('Testing simple endpoint...')
-                  try {
-                    const response = await fetch('/api/notifications/test', {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ test: 'data' })
-                    })
-                    console.log('Test endpoint response status:', response.status)
-                    console.log('Test endpoint response ok:', response.ok)
-                    const data = await response.json()
-                    console.log('Test endpoint response data:', data)
-                  } catch (error) {
-                    console.error('Test endpoint error:', error)
-                  }
-                }}
-                className="bg-white/20 hover:bg-white/30 text-white border border-white/30"
-              >
-                Test Simple API
-              </Button>
             </div>
           </div>
         </div>

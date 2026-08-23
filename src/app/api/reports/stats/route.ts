@@ -123,7 +123,10 @@ export async function GET(request: NextRequest) {
           class: {
             teacher: { consultancyId }
           },
-          ...yearFilter
+          enrolledAt: {
+            gte: new Date(`${selectedYear}-01-01`),
+            lt: new Date(`${selectedYear + 1}-01-01`)
+          }
         }
       }),
       

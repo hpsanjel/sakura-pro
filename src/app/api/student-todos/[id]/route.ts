@@ -131,7 +131,7 @@ export async function PUT(
       if (validatedData.status === "COMPLETED" && existingTodo.status !== "COMPLETED") {
         updateData.completedDate = new Date()
         updateData.completedBy = session.user.id
-        
+
         // Calculate actual days taken
         if (existingTodo.assignedDate) {
           const actualDays = Math.ceil(
@@ -139,11 +139,24 @@ export async function PUT(
           )
           updateData.actualDays = actualDays
         }
+
+        // Keep checklist items in sync so the progress bar can never
+        // show incomplete while the todo itself is marked COMPLETED
+        await prisma.todoChecklistItem.updateMany({
+          where: { todoId: id, isCompleted: false },
+          data: { isCompleted: true, completedAt: new Date() },
+        })
       } else if (validatedData.status !== "COMPLETED" && existingTodo.status === "COMPLETED") {
         // Un-completing the todo
         updateData.completedDate = null
         updateData.completedBy = null
         updateData.actualDays = null
+
+        // Reopen the checklist too, so progress reflects the reopened state
+        await prisma.todoChecklistItem.updateMany({
+          where: { todoId: id, isCompleted: true },
+          data: { isCompleted: false, completedAt: null },
+        })
       }
     }
 

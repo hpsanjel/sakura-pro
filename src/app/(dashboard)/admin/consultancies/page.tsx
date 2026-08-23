@@ -219,12 +219,12 @@ export default function ConsultanciesPage() {
 
         {/* Create/Edit Form Modal */}
         {showCreateForm && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 {editingConsultancy ? "Edit Consultancy" : "Create New Consultancy"}
               </h2>
-              
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

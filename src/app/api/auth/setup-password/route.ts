@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate the setup token
-    const tokenData = validateSetupToken(token)
+    const tokenData = await validateSetupToken(token)
     if (!tokenData) {
       return NextResponse.json(
         { error: "Invalid or expired setup link" },
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Consume the token so it can't be used again
-    consumeSetupToken(token)
+    await consumeSetupToken(token)
 
     console.log(`Password updated successfully for: ${tokenData.email}`)
 

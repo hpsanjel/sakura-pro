@@ -1,44 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getWorkflowEngine } from "@/lib/workflow-engine"
+import { getApiSession, requireRole, assertTenantMatch } from "@/lib/api-auth"
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ documentId: string }> }
 ) {
   try {
-    console.log("=== DOCUMENT ACTION API CALLED ===")
-    console.log("Request headers:", Object.fromEntries(request.headers.entries()))
-    console.log("Request URL:", request.url)
-    
-    const session = await getServerSession(authOptions)
-    console.log("Session result:", session)
-
-    if (!session) {
-      console.log("❌ No session found in document action API")
-      return NextResponse.json({ error: "Unauthorized - No session" }, { status: 401 })
-    }
-
-    console.log("✅ Session found for user:", session.user.email, "Role:", session.user.role)
-
-    // Check if user has permission to verify/reject documents
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { consultancy: true }
-    })
-
-    if (!user) {
-      console.log("User not found in database:", session.user.email)
-      return NextResponse.json({ error: "User not found" }, { status: 404 })
-    }
+    const session = await getApiSession()
 
     // Only ADMIN, COUNSELOR, TEACHER, and SUPERADMIN can verify/reject documents
-    if (!["ADMIN", "COUNSELOR", "TEACHER", "SUPERADMIN"].includes(user.role)) {
-      console.log("Insufficient permissions for user:", user.role)
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 })
-    }
+    const denied = requireRole(session, ["ADMIN", "COUNSELOR", "TEACHER", "SUPERADMIN"])
+    if (denied) return denied
+    const user = session!.user
 
     const { documentId } = await params
     const { searchParams } = new URL(request.url)
@@ -65,6 +40,9 @@ export async function PATCH(
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
+
+    const tenantDenied = assertTenantMatch(session!, document.student.consultancyId)
+    if (tenantDenied) return tenantDenied
 
     // Update document status
     let updateData: any

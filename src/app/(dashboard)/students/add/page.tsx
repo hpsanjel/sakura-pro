@@ -21,7 +21,6 @@ interface FormData {
   studyGoals: string
   preferredStudyField: string
   workExperience: string
-  financialProof: string
 }
 
 interface FormErrors {
@@ -43,10 +42,9 @@ const VISA_STATUSES = [
   { value: "DOCS_VERIFIED", label: "Documents Verified" },
   { value: "SENT_TO_JAPAN", label: "Sent to Japan" },
   { value: "COE_APPLIED", label: "COE Applied" },
-  { value: "COE_RECEIVED", label: "COE Received" },
+  { value: "COE_APPROVED", label: "COE Approved" },
   { value: "VISA_APPLIED", label: "Visa Applied" },
-  { value: "VISA_APPROVED", label: "Visa Approved" },
-  { value: "TRAVEL_READY", label: "Travel Ready" }
+  { value: "VISA_APPROVED", label: "Visa Approved" }
 ]
 
 export default function AddStudentPage() {
@@ -67,7 +65,6 @@ export default function AddStudentPage() {
     studyGoals: "",
     preferredStudyField: "",
     workExperience: "",
-    financialProof: "",
   })
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -97,8 +94,8 @@ export default function AddStudentPage() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone is required"
-    } else if (!/^(98\d{8}|97\d{8}|01\d{9})$/.test(formData.phone.replace(/[\s-]/g, ''))) {
-      newErrors.phone = "Please enter a valid Nepali phone number (98xxxxxxxx or 97xxxxxxxx)"
+    } else if (!/^(\+?977)?(98\d{8}|97\d{8}|01\d{9})$/.test(formData.phone.replace(/[\s-]/g, ''))) {
+      newErrors.phone = "Please enter a valid Nepali phone number (98xxxxxxxx, 97xxxxxxxx, or +977-98xxxxxxxx)"
     }
 
     if (!formData.address.trim()) {
@@ -442,19 +439,6 @@ export default function AddStudentPage() {
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Describe any relevant work experience"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Financial Proof
-              </label>
-              <textarea
-                value={formData.financialProof}
-                onChange={(e) => handleInputChange('financialProof', e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Describe financial situation and sponsor details"
               />
             </div>
           </div>

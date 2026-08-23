@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { sendStudentWelcomeEmail } from "@/lib/email"
-import crypto from "crypto"
-import bcrypt from "bcryptjs"
+import { generateSetupToken } from "@/lib/tokens"
 
 export async function POST(
   request: NextRequest,
@@ -39,27 +38,17 @@ export async function POST(
       return NextResponse.json({ error: "Student already has an account" }, { status: 400 })
     }
 
-    // Generate a unique token for password setup
-    const setupToken = crypto.randomBytes(32).toString('hex')
-    const setupTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
-
-    // Create user account with temporary password (will be changed by student)
-    const tempPassword = crypto.randomBytes(16).toString('hex')
-    const hashedPassword = await bcrypt.hash(tempPassword, 12)
-
-    console.log("Session data:", session)
-    console.log("Consultancy ID:", session.user.consultancyId)
-
     const consultancyId = session.user.consultancyId
     if (!consultancyId) {
       return NextResponse.json({ error: "Consultancy ID not found in session" }, { status: 400 })
     }
 
+    // Create user account with no password yet; the student sets one via the setup-password link
     const user = await prisma.user.create({
       data: {
         email: student.email,
         name: student.name,
-        password: hashedPassword,
+        password: null,
         role: 'STUDENT',
         consultancyId,
       }
@@ -82,15 +71,8 @@ export async function POST(
       console.log(`Student ${student.name} (${student.id}) visa status automatically updated from NEW_LEAD to DOCS_PENDING when login account was created`)
     }
 
-    // Store setup token in the user's record (for demo purposes)
-    // In production, you'd want a separate passwordResetTokens table
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        // Store token in a custom field or create a passwordResetTokens table
-        // For demo purposes, we'll just send the setup link
-      }
-    })
+    // Generate a persisted setup token for the password-setup link
+    const setupToken = await generateSetupToken(user.id, student.email, 'STUDENT', consultancyId)
 
     // Create default documents for the student - matching frontend REQUIRED_DOCUMENT_TYPES
     const documentTypes = [

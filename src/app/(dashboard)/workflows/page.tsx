@@ -107,27 +107,9 @@ export default function WorkflowManagement() {
     }
     
     console.log('Form data being submitted:', submissionData)
-    
+
     try {
-      // Test the body parsing first
-      console.log('Testing body parsing...')
-      const testResponse = await fetch('/api/test-body', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(submissionData)
-      })
-      
-      if (testResponse.ok) {
-        const testResult = await testResponse.json()
-        console.log('Test body parsing result:', testResult)
-      } else {
-        console.error('Test body parsing failed - Status:', testResponse.status)
-      }
-      
-      // Now try the actual API
-      const url = editingTemplate 
+      const url = editingTemplate
         ? `/api/workflows/templates/${editingTemplate.id}`
         : '/api/workflows/templates'
       

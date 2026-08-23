@@ -14,7 +14,7 @@ const updateStudentSchema = z.object({
   phone: z.string().min(1, "Phone is required").optional(),
   address: z.string().min(1, "Address is required").optional(),
   education: z.string().min(1, "Education is required").optional(),
-  japaneseLanguageLevel: z.enum(["N1", "N2", "N3", "N4", "N5"]).optional(),
+  japaneseLanguageLevel: z.string().optional(),
   intake: z.enum(["April", "July", "October", "January"]).optional(),
   visaStatus: z.enum([
     "NEW_LEAD", "DOCS_PENDING", "DOCS_VERIFIED", "SENT_TO_JAPAN", 

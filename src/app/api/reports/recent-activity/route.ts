@@ -60,10 +60,11 @@ export async function GET(request: NextRequest) {
     // Get recent applications for selected year
     const recentApplications = await prisma.application.findMany({
       where: {
-        school: { 
-          consultancyId,
-          ...yearFilter
-        },
+        school: { consultancyId },
+        appliedAt: {
+          gte: new Date(`${selectedYear}-01-01`),
+          lt: new Date(`${selectedYear + 1}-01-01`)
+        }
       },
       orderBy: { appliedAt: 'desc' },
       take: 5,
@@ -79,11 +80,11 @@ export async function GET(request: NextRequest) {
     // Get recent document uploads for selected year (only actually uploaded documents)
     const recentDocuments = await prisma.document.findMany({
       where: {
-        student: { 
-          consultancyId,
-          ...yearFilter
-        },
-        uploadedAt: { not: null } // Only get documents that were actually uploaded
+        student: { consultancyId },
+        uploadedAt: {
+          gte: new Date(`${selectedYear}-01-01`),
+          lt: new Date(`${selectedYear + 1}-01-01`)
+        } // implicitly excludes documents that were never uploaded (null)
       },
       orderBy: { uploadedAt: 'desc' },
       take: 5,

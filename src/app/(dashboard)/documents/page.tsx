@@ -417,8 +417,9 @@ export default function DocumentsPage() {
     const verified = documents.filter(doc => doc.status === 'VERIFIED').length
     const rejected = documents.filter(doc => doc.status === 'REJECTED').length
     const missing = documents.filter(doc => doc.status === 'MISSING').length
-    
-    return { total, uploaded, verified, rejected, missing }
+    const progressPercent = total > 0 ? Math.round(((uploaded + verified) / total) * 100) : 0
+
+    return { total, uploaded, verified, rejected, missing, progressPercent }
   }
 
   const filteredStudents = students.filter(student => {
@@ -645,7 +646,7 @@ export default function DocumentsPage() {
                       </div>
                       
                       <div className="text-sm text-gray-600">
-                        Progress: {Math.round(((documentStats.uploaded + documentStats.verified) / documentStats.total) * 100)}%
+                        Progress: {documentStats.progressPercent}%
                       </div>
                     </div>
                   </div>
@@ -657,8 +658,8 @@ export default function DocumentsPage() {
 
         {/* Upload Modal */}
         {showUploadModal && selectedStudent && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Document</h2>
               <p className="text-gray-600 mb-4">Student: {selectedStudent.name}</p>
               
@@ -885,14 +886,14 @@ export default function DocumentsPage() {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="font-medium text-gray-900">Document Progress</h4>
                     <span className="text-sm text-gray-600">
-                      {Math.round(((documentStats.uploaded + documentStats.verified) / documentStats.total) * 100)}%
+                      {documentStats.progressPercent}%
                     </span>
                   </div>
-                  
+
                   <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${((documentStats.uploaded + documentStats.verified) / documentStats.total) * 100}%` }}
+                      style={{ width: `${documentStats.progressPercent}%` }}
                     />
                   </div>
                   
@@ -1071,8 +1072,8 @@ export default function DocumentsPage() {
 
       {/* Upload Modal */}
       {showUploadModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Upload Document</h2>
             <p className="text-gray-600 mb-4">Student: {selectedStudent.name}</p>
             

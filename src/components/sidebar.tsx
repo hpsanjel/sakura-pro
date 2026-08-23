@@ -368,14 +368,16 @@ export default function Sidebar() {
                     <User className="w-4 h-4 text-gray-400" />
                     Profile Settings
                   </Link>
-                  <Link
-                    href="/settings"
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                    onClick={() => setIsProfileOpen(false)}
-                  >
-                    <Settings className="w-4 h-4 text-gray-400" />
-                    Application Settings
-                  </Link>
+                  {userRole === "ADMIN" && (
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                      onClick={() => setIsProfileOpen(false)}
+                    >
+                      <Settings className="w-4 h-4 text-gray-400" />
+                      Application Settings
+                    </Link>
+                  )}
                   <div className="h-px bg-gray-200/50 my-1"></div>
                   <button
                     onClick={handleSignOut}

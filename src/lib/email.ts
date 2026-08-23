@@ -529,10 +529,106 @@ export async function sendConsultancyWelcomeEmail(
     `,
   }
 
+  await transporter.sendMail(mailOptions)
+}
+
+export async function sendPasswordResetEmail(
+  email: string,
+  resetLink: string,
+  userName?: string
+) {
+  const mailOptions = {
+    from: `"StudyAbroad Pro" <${process.env.GMAIL_USER}>`,
+    to: email,
+    subject: '🔐 Reset Your StudyAbroad Pro Password',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+            .security-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .button { display: inline-block; background: #667eea; color: white !important; padding: 15px 30px; text-decoration: none !important; border-radius: 6px; margin: 20px 0; font-weight: 600; }
+            .button-container { text-align: center; }
+            .expiry-notice { background: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px; }
+            .instruction { background: white; border: 1px solid #e5e7eb; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .instruction-title { font-weight: 600; color: #667eea; margin-bottom: 10px; }
+            .code-block { background: #f3f4f6; padding: 12px; border-radius: 4px; font-family: 'Courier New', monospace; word-break: break-all; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">🔐 Password Reset Request</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px;">StudyAbroad Pro</p>
+            </div>
+            <div class="content">
+              ${userName ? `<h2>Hi ${userName},</h2>` : '<h2>Hello,</h2>'}
+              <p>We received a request to reset the password for your StudyAbroad Pro account. If you didn't make this request, you can safely ignore this email.</p>
+
+              <div class="security-box">
+                <strong>🔒 Security Notice:</strong> Never share this link with anyone. Our team will never ask for your password.
+              </div>
+
+              <div class="button-container">
+                <a href="${resetLink}" class="button">
+                  Reset Your Password →
+                </a>
+              </div>
+
+              <p style="text-align: center; color: #6b7280; font-size: 14px;">
+                Or copy and paste this link in your browser:<br>
+                <div class="code-block">${resetLink}</div>
+              </p>
+
+              <div class="expiry-notice">
+                <strong>⏰ Important:</strong> This password reset link will expire in 1 hour. Please reset your password promptly.
+              </div>
+
+              <div class="instruction">
+                <div class="instruction-title">What to do next:</div>
+                <ol style="margin: 10px 0;">
+                  <li>Click the "Reset Your Password" button above</li>
+                  <li>Enter your new password (make it strong and unique)</li>
+                  <li>Confirm your new password</li>
+                  <li>Log in with your new password</li>
+                </ol>
+              </div>
+
+              <h3>Password Tips:</h3>
+              <ul>
+                <li>✅ Use at least 8 characters</li>
+                <li>✅ Include uppercase and lowercase letters</li>
+                <li>✅ Include numbers and special characters</li>
+                <li>✅ Avoid using personal information</li>
+                <li>✅ Don't reuse old passwords</li>
+              </ul>
+
+              <h3>Didn't Request a Password Reset?</h3>
+              <p>If you didn't request this password reset, someone may have used your email address by mistake. You can safely ignore this email, and your password will remain unchanged.</p>
+
+              <p style="color: #6b7280; font-size: 14px;">If you continue to experience issues or have concerns about your account security, please contact our support team immediately.</p>
+            </div>
+            <div class="footer">
+              <p>© 2024 StudyAbroad Pro. All rights reserved.</p>
+              <p style="margin-top: 10px; font-size: 12px;">This is an automated message. Please do not reply to this email.</p>
+              <p style="margin-top: 10px; font-size: 12px;">If you believe you received this email in error, please ignore it.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  }
+
   try {
     await transporter.sendMail(mailOptions)
   } catch (error) {
-    console.error('Failed to send consultancy welcome email:', error)
+    console.error('Failed to send password reset email:', error)
     throw error
   }
 }
+

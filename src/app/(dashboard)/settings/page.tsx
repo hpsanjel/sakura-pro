@@ -47,10 +47,15 @@ export default function SettingsPage() {
       return
     }
 
+    if (status === "authenticated" && session?.user?.role !== "ADMIN") {
+      setLoading(false)
+      return
+    }
+
     if (status === "authenticated") {
       fetchSettingsData()
     }
-  }, [status, router])
+  }, [status, router, session])
 
   const fetchSettingsData = async () => {
     try {
@@ -118,6 +123,19 @@ export default function SettingsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
+      </div>
+    )
+  }
+
+  if (session?.user?.role !== "ADMIN") {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-2xl font-bold text-gray-900">Application Settings</h1>
+          <p className="mt-3 text-gray-600">
+            Only a consultancy Admin can manage these settings. If you need something changed here, ask your Admin.
+          </p>
+        </div>
       </div>
     )
   }

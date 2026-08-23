@@ -35,7 +35,9 @@ export default function ConsultanciesPage() {
     phone: "",
     address: "",
     status: "PENDING" as "ACTIVE" | "INACTIVE" | "PENDING",
-    selectedYear: new Date().getFullYear()
+    selectedYear: new Date().getFullYear(),
+    adminName: "",
+    adminEmail: ""
   });
 
   useEffect(() => {
@@ -88,7 +90,10 @@ export default function ConsultanciesPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Failed to save consultancy");
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || "Failed to save consultancy");
+      }
 
       // Reset form
       setFormData({
@@ -97,7 +102,9 @@ export default function ConsultanciesPage() {
         phone: "",
         address: "",
         status: "PENDING",
-        selectedYear: new Date().getFullYear()
+        selectedYear: new Date().getFullYear(),
+        adminName: "",
+        adminEmail: ""
       });
       setShowCreateForm(false);
       setEditingConsultancy(null);
@@ -119,7 +126,9 @@ export default function ConsultanciesPage() {
       phone: consultancy.phone,
       address: consultancy.address,
       status: consultancy.status,
-      selectedYear: consultancy.selectedYear
+      selectedYear: consultancy.selectedYear,
+      adminName: "",
+      adminEmail: ""
     });
     setShowCreateForm(true);
   };
@@ -186,7 +195,9 @@ export default function ConsultanciesPage() {
                   phone: "",
                   address: "",
                   status: "PENDING",
-                  selectedYear: new Date().getFullYear()
+                  selectedYear: new Date().getFullYear(),
+                  adminName: "",
+                  adminEmail: ""
                 });
               }}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -266,6 +277,43 @@ export default function ConsultanciesPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
+
+                {!editingConsultancy && (
+                  <>
+                    <div className="pt-2 border-t border-gray-200">
+                      <p className="text-sm font-medium text-gray-900">Admin Account</p>
+                      <p className="text-xs text-gray-500">
+                        We&apos;ll email this person a link to set up their password.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Admin Name
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.adminName}
+                        onChange={(e) => setFormData({ ...formData, adminName: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Admin Email
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={formData.adminEmail}
+                        onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">

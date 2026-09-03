@@ -9,7 +9,7 @@ const updateUserSchema = z.object({
   email: z.string().email("Invalid email address").optional(),
   name: z.string().min(2, "Name must be at least 2 characters").optional(),
   password: z.string().min(6, "Password must be at least 6 characters").optional(),
-  role: z.enum(["ADMIN", "COUNSELOR", "STUDENT"]).optional(),
+  role: z.enum(["ADMIN", "COUNSELOR", "TEACHER", "STUDENT"]).optional(),
 })
 
 export async function GET(
@@ -164,6 +164,10 @@ export async function PUT(
     )
   }
 }
+
+// The edit-user UI submits PATCH; PUT already applies a partial update
+// (only fields present in the body are touched), so the two are equivalent here.
+export const PATCH = PUT
 
 export async function DELETE(
   req: NextRequest,
